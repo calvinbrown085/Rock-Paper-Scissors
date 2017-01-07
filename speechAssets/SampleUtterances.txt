@@ -1,0 +1,34 @@
+StartGameIntent start rock paper scissors
+StartGameIntent start game
+StartGameIntent start
+
+
+RockIntent rock
+RockIntent rocker
+RockIntent rocks
+RockIntent I want a rock
+RockIntent can I have a rock
+
+
+PaperIntent paper
+PaperIntent papers
+PaperIntent I'll have paper
+PaperIntent I'll choose paper
+
+
+ScissorsIntent scissors
+ScissorsIntent I want scissors
+ScissorsIntent I want a scissors
+
+
+GamesPlayedIntent how many games have I won
+GamesPlayedIntent how many
+GamesPlayedIntent won
+
+
+AMAZON.StopIntent No
+AMAZON.StopIntent Stop
+AMAZON.StopIntent exit
+AMAZON.StopIntent quit
+AMAZON.StopIntent I don't want to play anymore
+AMAZON.StopIntent i'm done

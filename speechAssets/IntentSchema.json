@@ -1,0 +1,28 @@
+{
+  "intents": [
+    {
+      "intent": "StartGameIntent"
+    },
+    {
+      "intent": "RockIntent"
+    },
+    {
+      "intent": "PaperIntent"
+    },
+    {
+      "intent": "ScissorsIntent"
+    },
+    {
+      "intent": "GamesPlayedIntent"
+    },
+    {
+      "intent": "AMAZON.HelpIntent"
+    },
+    {
+      "intent": "AMAZON.StopIntent"
+    },
+    {
+      "intent": "AMAZON.CancelIntent"
+    }
+  ]
+}
