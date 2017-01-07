@@ -6,24 +6,17 @@
 var APP_ID = undefined; //OPTIONAL: replace with "amzn1.echo-sdk-ams.app.[your-unique-value-here]";
 
 /**
- * Array containing space Puns.
+ * Initializing alexaWins and userWins also the weapons list
  */
 var alexaWins = 0
 var userWins = 0
 var totalGamesPlayed = 0
 var weaponsList = ["rock", "paper", "scissors"];
 
-/**
- * The AlexaSkill prototype and helper functions
- */
+
 var AlexaSkill = require('./AlexaSkill');
 
-/**
- * SpaceGeek is a child of AlexaSkill.
- * To read more about inheritance in JavaScript, see the link below.
- *
- * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Introduction_to_Object-Oriented_JavaScript#Inheritance
- */
+
 var RockPaperScissors = function () {
     AlexaSkill.call(this, APP_ID);
 };
@@ -67,7 +60,7 @@ RockPaperScissors.prototype.intentHandlers = {
     },
 
     "AMAZON.HelpIntent": function (intent, session, response) {
-        response.ask("You can say tell me a Pun, or, you can say exit... What can I help you with?", "What can I help you with?");
+        response.ask("You can say rock, paper, or scissors. Or you can ask me how many games we have played together.", "What can I help you with?");
     },
 
     "AMAZON.StopIntent": function (intent, session, response) {
@@ -81,14 +74,18 @@ RockPaperScissors.prototype.intentHandlers = {
     }
 };
 
-
+/*
+Here we handle the users starting the game, and alexa asks what weapon the user wants
+*/
 function handleStartGame(response) {
     // Create speech output
     var speechOutput = "Okay, i'll start a game of rock, paper, scissors, what weapon would you like?";
     var cardTitle = "Start Game";
     response.askWithCard(speechOutput, cardTitle, speechOutput);
 }
-
+/*
+Handles if the user chooses rock as their weapon
+*/
 function handleRock(response) {
     var weapon = chooseWeapon();
     var speechOutput = "We tied!";
@@ -113,6 +110,9 @@ function handleRock(response) {
     totalGamesPlayed += 1;
     response.askWithCard(speechOutput, cardTitle, speechOutput);
 }
+/*
+Handles if the user chooses paper as their weapon
+*/
 function handlePaper(response) {
     var weapon = chooseWeapon();
     var speechOutput = "We tied!";
@@ -136,6 +136,10 @@ function handlePaper(response) {
     totalGamesPlayed += 1;
     response.askWithCard(speechOutput, cardTitle, speechOutput);
 }
+
+/*
+Handles if the user chooses scissors as their weapon
+*/
 function handleScissors(response) {
     var weapon = chooseWeapon();
     var speechOutput = "";
@@ -160,11 +164,17 @@ function handleScissors(response) {
     response.askWithCard(speechOutput, cardTitle, speechOutput);
 }
 
+/*
+Handles how many games have been played by the user, tells them how man games Alexa has won, and how many the user has won
+*/
 function handleGamesPlayed(response) {
   var speechOutput = "You have played, " + totalGamesPlayed + ", in which I have won, " + alexaWins + ", and you have won, " + userWins;
   var cardTitle = "Games Played";
   response.tellWithCard(speechOutput, cardTitle, speechOutput);
 }
+/*
+Handles if the user chooses paper as their weapon
+*/
 function chooseWeapon() {
   var weaponIndex = Math.floor(Math.random() * weaponsList.length);
   var weapon = weaponsList[weaponIndex];
