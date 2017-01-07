@@ -173,8 +173,9 @@ function handleGamesPlayed(response) {
   response.tellWithCard(speechOutput, cardTitle, speechOutput);
 }
 /*
-Handles if the user chooses paper as their weapon
+Handles alexas weapon choice, it's random.
 */
+// todo: Make alexa a bit smarter by having her not just randomly choose.
 function chooseWeapon() {
   var weaponIndex = Math.floor(Math.random() * weaponsList.length);
   var weapon = weaponsList[weaponIndex];
