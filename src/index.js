@@ -8,9 +8,11 @@ var APP_ID = undefined; //OPTIONAL: replace with "amzn1.echo-sdk-ams.app.[your-u
 /**
  * Initializing alexaWins and userWins also the weapons list
  */
-var alexaWins = 0
-var userWins = 0
-var totalGamesPlayed = 0
+
+var alexaWins = 0;
+var userWins = 0;
+var ties = 0;
+var totalGamesPlayed = 0;
 var weaponsList = ["rock", "paper", "scissors"];
 
 
@@ -88,25 +90,24 @@ Handles if the user chooses rock as their weapon
 */
 function handleRock(response) {
     var weapon = chooseWeapon();
-    var speechOutput = "We tied!";
-    var cardTitle = "Tied";
-    var playAgain = ",,,,,if you would like to play again just say the weapon you want to use.";
+    var speechText = "";
+    var cardTitle = "";
     if(weapon === "rock"){
-      speechOutput = "We tied!";
+      speechText = tied();
       cardTitle = "Tied";
-
     }
     else if(weapon === "paper") {
-      speechOutput = "I won, I chose paper!";
+      speechText = lose("I won, I chose paper!");
       cardTitle = "I won!";
-      alexaWins += 1;
     }
     else {
-      speechOutput = "You won, I chose scissors!";
+      speechText = win("You won, I chose scissors!");
       cardTitle = "You won!";
-      userWins += 1;
     }
-    speechOutput = speechOutput + playAgain;
+    var speechOutput = {
+        speech: speechText,
+        type: AlexaSkill.speechOutputType.SSML
+    };
     totalGamesPlayed += 1;
     response.askWithCard(speechOutput, cardTitle, speechOutput);
 }
@@ -115,24 +116,25 @@ Handles if the user chooses paper as their weapon
 */
 function handlePaper(response) {
     var weapon = chooseWeapon();
-    var speechOutput = "We tied!";
-    var cardTitle = "Tied";
-    var playAgain = " , , , , ,if you would like to play again just say the weapon you want to use.";
+    var speechText = "";
+    var cardTitle = "";
     if(weapon === "rock"){
-      userWins += 1;
-      speechOutput = "You won, I chose rock!";
+      speechText = win("You won, I chose rock!");
       cardTitle = "You won!";
     }
     else if(weapon === "paper") {
-      speechOutput = "We tied!";
+      speechText = tied();
       cardTitle = "Tied";
     }
     else {
-      alexaWins += 1;
-      speechOutput = "I won, I chose scissors!";
+
+      speechText = lose("I won, I chose scissors!");
       cardTitle = "I won!";
     }
-    speechOutput = speechOutput + playAgain;
+    var speechOutput = {
+        speech: speechText,
+        type: AlexaSkill.speechOutputType.SSML
+    };
     totalGamesPlayed += 1;
     response.askWithCard(speechOutput, cardTitle, speechOutput);
 }
@@ -142,24 +144,25 @@ Handles if the user chooses scissors as their weapon
 */
 function handleScissors(response) {
     var weapon = chooseWeapon();
-    var speechOutput = "";
+    var speechText = "";
     var cardTitle = "";
     var playAgain = ", , , , ,if you would like to play again just say the weapon you want to use.";
     if(weapon === "rock"){
-      speechOutput = "I won, I chose rock!";
+      speechText = lose("I won, I chose rock!");
       cardTitle = "I won!";
-      alexaWins += 1;
     }
     else if(weapon === "paper") {
-      speechOutput = "You won, I chose paper!";
+      speechText = win("You won, I chose paper!");
       cardTitle = "You won!";
-      userWins += 1;
     }
     else {
-      speechOutput = "We tied!";
+      speechText = tied("We tied!");
       cardTitle = "Tied";
     }
-    speechOutput = speechOutput + playAgain;
+    var speechOutput = {
+        speech: speechText,
+        type: AlexaSkill.speechOutputType.SSML
+    };
     totalGamesPlayed += 1;
     response.askWithCard(speechOutput, cardTitle, speechOutput);
 }
@@ -168,7 +171,8 @@ function handleScissors(response) {
 Handles how many games have been played by the user, tells them how man games Alexa has won, and how many the user has won
 */
 function handleGamesPlayed(response) {
-  var speechOutput = "You have played, " + totalGamesPlayed + ", in which I have won, " + alexaWins + ", and you have won, " + userWins;
+  var speechOutput = "You have played, " + totalGamesPlayed + ",games , in which I have won, " + alexaWins + ", and you have won, " + userWins +
+  ", we have also tied " + ties + ", times";
   var cardTitle = "Games Played";
   response.tellWithCard(speechOutput, cardTitle, speechOutput);
 }
@@ -181,6 +185,22 @@ function chooseWeapon() {
   var weapon = weaponsList[weaponIndex];
   return weapon;
 }
+
+
+function tied() {
+  ties += 1;
+  return "<speak> <p>We tied!</p> <p>if you would like to play again just say the weapon you want to use.</p></speak>";
+}
+function win(message) {
+  userWins += 1;
+  return "<speak> <p>" + message + "</p> <p>if you would like to play again just say the weapon you want to use.</p></speak>";
+}
+
+function lose(message) {
+  alexaWins += 1;
+  return "<speak> <p>" + message + "</p> <p>if you would like to play again just say the weapon you want to use.</p></speak>";
+}
+
 
 // Create the handler that responds to the Alexa Request.
 exports.handler = function (event, context) {
