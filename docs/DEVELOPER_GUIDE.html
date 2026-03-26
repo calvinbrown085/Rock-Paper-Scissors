@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rock-Paper-Scissors — Docs</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #07090f;
+      --bg2: #0d1117;
+      --surface: rgba(255,255,255,0.04);
+      --surface2: rgba(255,255,255,0.08);
+      --border: rgba(255,255,255,0.09);
+      --text: #e2e8f0;
+      --muted: #8892a4;
+      --accent: #818cf8;
+      --accent2: #c084fc;
+      --sidebar-w: 272px;
+      --radius: 10px;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      line-height: 1.75;
+      overflow-x: hidden;
+    }
+    #progress {
+      position: fixed; top: 0; left: 0; height: 2px; z-index: 999;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      width: 0%; transition: width 0.1s linear; pointer-events: none;
+    }
+    #bg-canvas {
+      position: fixed; inset: 0; z-index: 0;
+      pointer-events: none; opacity: 0.45;
+    }
+    #app { display: flex; min-height: 100vh; position: relative; z-index: 1; }
+
+    /* ── Sidebar ── */
+    #sidebar {
+      width: var(--sidebar-w); flex-shrink: 0;
+      position: fixed; top: 0; left: 0; bottom: 0;
+      background: rgba(10, 12, 20, 0.88);
+      backdrop-filter: blur(24px);
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      overflow-y: auto; z-index: 100;
+      transition: transform 0.28s cubic-bezier(.4,0,.2,1);
+    }
+    .sb-head {
+      display: flex; align-items: center; gap: 12px;
+      padding: 22px 20px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .sb-icon { font-size: 26px; }
+    .sb-label { font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .12em; color: var(--accent); }
+    .sb-repo { font-size: 14px; font-weight: 600; color: var(--text); margin-top: 2px; }
+    #nav { flex: 1; padding: 14px 0; }
+    .nl {
+      display: block; padding: 5px 20px; color: var(--muted);
+      text-decoration: none; font-size: 13px; line-height: 1.4;
+      border-left: 2px solid transparent;
+      transition: color .14s, background .14s, border-color .14s;
+      cursor: pointer;
+    }
+    .nl:hover { color: var(--text); background: var(--surface); }
+    .nl.active { color: var(--accent); border-left-color: var(--accent); background: rgba(129,140,248,.08); }
+    .nl.h1 { padding-left: 20px; font-weight: 500; font-size: 13.5px; }
+    .nl.h2 { padding-left: 32px; }
+    .nl.h3 { padding-left: 44px; font-size: 12px; }
+    .sb-foot { padding: 14px 20px; border-top: 1px solid var(--border); }
+    .sb-foot a { color: var(--muted); text-decoration: none; font-size: 11.5px;
+      transition: color .14s; }
+    .sb-foot a:hover { color: var(--text); }
+
+    /* ── Main ── */
+    #main { margin-left: var(--sidebar-w); flex: 1; min-width: 0; }
+    #content { max-width: 820px; margin: 0 auto; padding: 56px 52px 120px; }
+
+    /* ── Menu toggle ── */
+    #mtoggle {
+      display: none; position: fixed; top: 14px; left: 14px;
+      z-index: 200; background: var(--surface2);
+      border: 1px solid var(--border); color: var(--text);
+      padding: 7px 13px; border-radius: 8px; cursor: pointer; font-size: 15px;
+    }
+
+    /* ── Section animations ── */
+    .sw { opacity: 0; transform: translateY(20px);
+      transition: opacity .45s ease, transform .45s ease; }
+    .sw.visible { opacity: 1; transform: translateY(0); }
+
+    /* ── Typography ── */
+    #content h1 {
+      font-size: 2.15em; font-weight: 700; line-height: 1.2;
+      background: linear-gradient(130deg, #e2e8f0 0%, var(--accent) 55%, var(--accent2) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; margin: 0 0 .45em;
+    }
+    #content h2 {
+      font-size: 1.45em; font-weight: 600; color: var(--text);
+      margin: 2.2em 0 .8em; padding-bottom: .5em;
+      border-bottom: 1px solid var(--border); scroll-margin-top: 20px;
+    }
+    #content h3 {
+      font-size: 1.12em; font-weight: 600; color: var(--text);
+      margin: 1.6em 0 .5em; scroll-margin-top: 20px;
+    }
+    #content h4 { font-size: .95em; font-weight: 600; color: var(--muted); margin: 1.2em 0 .4em; }
+    #content p { margin: 0 0 1em; }
+    #content a { color: var(--accent); text-decoration: none;
+      border-bottom: 1px solid rgba(129,140,248,.3); transition: border-color .14s; }
+    #content a:hover { border-color: var(--accent); }
+    #content ul, #content ol { margin: 0 0 1em 1.6em; }
+    #content li { margin-bottom: .3em; }
+    #content hr { border: none; border-top: 1px solid var(--border); margin: 2.2em 0; }
+    #content blockquote {
+      border-left: 3px solid var(--accent); margin: 1.5em 0;
+      padding: 12px 20px; background: rgba(129,140,248,.06);
+      border-radius: 0 var(--radius) var(--radius) 0; color: var(--muted);
+    }
+
+    /* ── Tables ── */
+    #content table { width: 100%; border-collapse: collapse; margin: 1.5em 0; font-size: 13.5px; }
+    #content th {
+      background: var(--surface2); padding: 9px 14px; text-align: left;
+      font-weight: 600; font-size: 11.5px; text-transform: uppercase;
+      letter-spacing: .05em; color: var(--muted); border-bottom: 1px solid var(--border);
+    }
+    #content td { padding: 9px 14px; border-bottom: 1px solid var(--border); }
+    #content tr:last-child td { border-bottom: none; }
+    #content tr:hover td { background: var(--surface); }
+
+    /* ── Code ── */
+    #content code {
+      font-family: 'JetBrains Mono', monospace; font-size: .85em;
+      background: var(--bg2); padding: 2px 7px; border-radius: 4px;
+      border: 1px solid var(--border); color: #fca5a5;
+    }
+    #content pre { margin: 1.5em 0; border-radius: var(--radius);
+      overflow: hidden; border: 1px solid var(--border); position: relative; }
+    #content pre code { background: none; border: none; padding: 20px;
+      color: inherit; font-size: 13px; display: block; overflow-x: auto; }
+    .cpbtn {
+      position: absolute; top: 10px; right: 10px;
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--muted); padding: 3px 10px; border-radius: 6px;
+      font-size: 11px; cursor: pointer; transition: all .14s;
+      font-family: 'Inter', sans-serif;
+    }
+    .cpbtn:hover { background: var(--surface); color: var(--text); }
+
+    /* ── Mermaid ── */
+    .mermaid {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 28px; margin: 1.5em 0;
+      text-align: center; overflow-x: auto;
+    }
+    .mermaid svg { max-width: 100%; height: auto; }
+
+    /* ── Responsive ── */
+    @media (max-width: 780px) {
+      #sidebar { transform: translateX(-100%); }
+      #sidebar.open { transform: translateX(0); }
+      #main { margin-left: 0; }
+      #mtoggle { display: block; }
+      #content { padding: 58px 22px 80px; }
+    }
+  </style>
+</head>
+<body>
+<div id="progress"></div>
+<canvas id="bg-canvas"></canvas>
+<div id="app">
+  <aside id="sidebar">
+    <div class="sb-head">
+      <span class="sb-icon">⚡</span>
+      <div>
+        <div class="sb-label">ByteChef Docs</div>
+        <div class="sb-repo">Rock-Paper-Scissors</div>
+      </div>
+    </div>
+    <nav id="nav"></nav>
+    <div class="sb-foot">
+      <a href="https://github.com/calvinbrown085/Rock-Paper-Scissors" target="_blank">View on GitHub →</a>
+    </div>
+  </aside>
+  <button id="mtoggle" aria-label="Menu">☰</button>
+  <main id="main"><div id="content"></div></main>
+</div>
+
+<script>const __MD__ = "# Developer Guide: Rock Paper Scissors Alexa Skill\n\nThis project implements a Rock-Paper-Scissors game as an Alexa Skill. Users can interact with an Alexa-enabled device to start a new game, choose their weapon (rock, paper, or scissors), and play against Alexa, who will randomly select her weapon. The skill provides immediate feedback on the game's outcome and tracks overall game statistics, including user wins, Alexa wins, and ties.\n\n## Architecture\n\nThe Rock Paper Scissors Alexa Skill operates on a standard Alexa Skill architecture leveraging AWS Lambda. User voice commands are processed by the Alexa Voice Service (AVS), which then sends an `IntentRequest` to an AWS Lambda function. The Lambda function executes the skill's business logic, primarily defined in `src/index.js`, utilizing a helper base class `src/AlexaSkill.js` for handling common Alexa interactions. The skill's interaction model, defined in `speechAssets/`, guides AVS in mapping user utterances to specific intents. Responses are then sent back through AVS to the user's Alexa device.\n\n```mermaid\ngraph TD\n    A[User/Alexa Device] -->|Voice Command| B(Alexa Voice Service)\n    B -->|Intent Request (JSON)| C(AWS Lambda Function)\n    C -->|Executes handler (index.handler)| D{src/index.js<br/>(Main Skill Logic)}\n    D -->|Utilizes base functionality| E(src/AlexaSkill.js<br/>(Alexa Skill Base Class))\n    E -->|Builds Response| C\n    D -->|Manages Game State| D\n    C -->|Speech Response (JSON)| B\n    B -->|Audio Output| A\n```\n\n## Key Files\n\n*   `src/index.js`: The primary entry point and core logic for the Rock Paper Scissors Alexa Skill. It defines the `RockPaperScissors` skill, extends the `AlexaSkill` base class, and implements the `onLaunch` and `onIntent` handlers for various game-related intents like `StartGameIntent`, `RockIntent`, `PaperIntent`, `ScissorsIntent`, and `GamesPlayedIntent`. It also manages game state variables such as `alexaWins`, `userWins`, `ties`, and `totalGamesPlayed`.\n*   `src/AlexaSkill.js`: A foundational JavaScript class that provides a reusable structure for building Alexa Skills. It handles incoming request routing (`LaunchRequest`, `IntentRequest`, `SessionEndedRequest`) to appropriate event handlers and provides helper methods for constructing various Alexa responses (`tell`, `ask`, `tellWithCard`, `askWithCard`).\n*   `speechAssets/IntentSchema.json`: Defines the interaction model for the Alexa skill, including all custom intents (e.g., `StartGameIntent`, `RockIntent`) and the standard AMAZON intents supported, along with any custom slot types (though none are explicitly used beyond basic utterances here).\n*   `speechAssets/SampleUtterances.txt`: Contains a list of example phrases that users might say to trigger each defined intent. These examples help train Alexa's natural language understanding model.\n\n## How to Run\n\nTo deploy and run this Alexa Skill, you will need an Alexa Developer Account and an AWS Account.\n\n1.  **Create an Alexa Skill:**\n    *   Log in to the [Alexa Developer Console](https://developer.amazon.com/alexa/console/skills).\n    *   Click \"Create Skill\" and give your skill a name (e.g., \"Rock Paper Scissors\").\n    *   Choose \"Custom\" model and \"Provision your own\" backend.\n\n2.  **Configure the Interaction Model:**\n    *   In the Alexa Developer Console, navigate to your skill's \"Interaction Model\" section.\n    *   **Intent Schema:** Copy the content of `speechAssets/IntentSchema.json` into the \"JSON Editor\". Save Model.\n    *   **Sample Utterances:** Copy the content of `speechAssets/SampleUtterances.txt` into the \"Sample Utterances\" text area. Save Model.\n    *   Click \"Build Model\" to compile your interaction model.\n\n3.  **Create an AWS Lambda Function:**\n    *   Log in to the [AWS Management Console](https://aws.amazon.com/console/).\n    *   Navigate to the Lambda service.\n    *   Click \"Create function\".\n    *   Choose \"Author from scratch\".\n    *   Set \"Function name\" (e.g., `rockPaperScissorsSkill`).\n    *   Choose \"Node.js 14.x\" (or a compatible newer runtime) for the \"Runtime\".\n    *   For \"Permissions\", create a new role with basic Lambda permissions.\n    *   Click \"Create function\".\n    *   In the \"Code\" tab of your new Lambda function:\n        *   Zip the contents of the `src/` directory (i.e., `AlexaSkill.js` and `index.js`). Ensure these files are at the root of the zip archive.\n        *   Upload this `.zip` file.\n        *   Set the \"Handler\" to `index.handler`.\n    *   Add an \"Alexa Skills Kit\" trigger:\n        *   In the Lambda function designer, click \"Add trigger\".\n        *   Select \"Alexa Skills Kit\".\n        *   (Optional but Recommended) Enable Skill ID verification and paste your Alexa Skill ID.\n\n4.  **Connect Alexa Skill to Lambda:**\n    *   Go back to the Alexa Developer Console for your skill.\n    *   Navigate to the \"Endpoint\" section.\n    *   Select \"AWS Lambda ARN\".\n    *   Copy the \"ARN\" from your AWS Lambda function's page and paste it into the \"Default Region\" field.\n    *   Click \"Save Endpoints\".\n\nYour skill is now deployed and ready for testing.\n\n## Environment Variables\n\nThe project does not explicitly use environment variables for configuration. However, it has one key configuration parameter within `src/index.js`:\n\n*   `APP_ID`: This variable is intended to hold your Alexa Skill ID (e.g., `\"amzn1.echo-sdk-ams.app.[your-unique-value-here]\"`). It's used by `AlexaSkill.js` to validate that incoming requests originate from your specific Alexa Skill, preventing unauthorized access. While marked as `undefined` and optional in the provided code, it is best practice to set this value for security.\n\n    To configure `APP_ID`:\n    1.  Find your Skill ID in the Alexa Developer Console (it starts with `amzn1.ask.skill...`).\n    2.  Open `src/index.js`.\n    3.  Replace `var APP_ID = undefined;` with `var APP_ID = \"amzn1.ask.skill.[YOUR_SKILL_ID]\";`.\n    4.  Re-zip and re-upload the `src/` directory to your AWS Lambda function.\n\n## How to Test\n\nYou can test your Alexa Skill using the following methods:\n\n1.  **Alexa Developer Console (Test Tab):**\n    *   In the Alexa Developer Console, go to your skill's \"Test\" tab.\n    *   You can type or speak utterances into the simulator (e.g., \"ask rock paper scissors to start a new game\", \"rock\", \"tell me how many games we played\").\n    *   The console will display the JSON request sent to Lambda and the JSON response received, along with Alexa's spoken output.\n\n2.  **Alexa-enabled Device:**\n    *   If your Alexa device is registered to the same Amazon account as your Alexa Developer Console, you can invoke the skill by saying its invocation phrase (e.g., \"Alexa, open rock paper scissors\").\n    *   This provides a real-world testing experience.\n\n3.  **AWS CloudWatch Logs:**\n    *   For debugging, check the logs of your AWS Lambda function in AWS CloudWatch. This will show any `console.log` statements or errors thrown by your JavaScript code.";</script>
+<script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+(function() {
+  // ── Mermaid ──
+  mermaid.initialize({
+    startOnLoad: false, theme: 'dark',
+    themeVariables: {
+      primaryColor: '#6366f1', primaryTextColor: '#e2e8f0',
+      primaryBorderColor: '#374151', lineColor: '#6b7280',
+      background: '#0d1117', mainBkg: '#161b22',
+      nodeBorder: '#374151', fontFamily: 'Inter, sans-serif',
+      edgeLabelBackground: '#1f2937', titleColor: '#e2e8f0',
+    }
+  });
+
+  // ── marked config ──
+  marked.use({
+    renderer: (function() {
+      var r = new marked.Renderer();
+      r.code = function(code, lang) {
+        if (lang === 'mermaid') return '<div class="mermaid">' + code + '</div>';
+        var hi = (lang && hljs.getLanguage(lang))
+          ? hljs.highlight(code, { language: lang }).value
+          : hljs.highlightAuto(code).value;
+        return '<pre><code class="hljs">' + hi + '</code><button class="cpbtn" onclick="cp(this)">Copy</button></pre>';
+      };
+      return r;
+    })()
+  });
+
+  // ── Render markdown ──
+  var content = document.getElementById('content');
+  content.innerHTML = marked.parse(__MD__);
+
+  // ── Mermaid run ──
+  mermaid.run({ nodes: document.querySelectorAll('.mermaid') });
+
+  // ── Build sidebar nav ──
+  var headings = content.querySelectorAll('h1,h2,h3');
+  var nav = document.getElementById('nav');
+  var slugs = {};
+  headings.forEach(function(h) {
+    var base = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    slugs[base] = (slugs[base] || 0) + 1;
+    h.id = slugs[base] > 1 ? base + '-' + slugs[base] : base;
+    var a = document.createElement('a');
+    a.className = 'nl ' + h.tagName.toLowerCase();
+    a.textContent = h.textContent;
+    a.href = '#' + h.id;
+    a.onclick = function(e) { e.preventDefault(); h.scrollIntoView({ behavior: 'smooth' }); };
+    nav.appendChild(a);
+  });
+
+  // ── Wrap sections for scroll animation ──
+  var nodes = content.querySelectorAll('h1,h2,h3,p,pre,table,ul,ol,blockquote,.mermaid');
+  nodes.forEach(function(el) {
+    var w = document.createElement('div');
+    w.className = 'sw';
+    el.parentNode.insertBefore(w, el);
+    w.appendChild(el);
+  });
+
+  // ── Intersection observer ──
+  var io = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); }
+    });
+  }, { rootMargin: '0px 0px -40px 0px', threshold: 0.08 });
+  document.querySelectorAll('.sw').forEach(function(el) { io.observe(el); });
+
+  // ── Scroll: progress + active nav ──
+  var hEls = Array.prototype.slice.call(content.querySelectorAll('h1[id],h2[id],h3[id]'));
+  var navLinks = Array.prototype.slice.call(nav.querySelectorAll('.nl'));
+  var prog = document.getElementById('progress');
+  window.addEventListener('scroll', function() {
+    var pct = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight) * 100;
+    prog.style.width = pct + '%';
+    var cur = '';
+    hEls.forEach(function(h) { if (h.getBoundingClientRect().top <= 80) cur = h.id; });
+    navLinks.forEach(function(a) { a.classList.toggle('active', a.getAttribute('href') === '#' + cur); });
+  }, { passive: true });
+
+  // ── Copy button ──
+  window.cp = function(btn) {
+    var code = btn.previousElementSibling.textContent;
+    navigator.clipboard.writeText(code).then(function() {
+      btn.textContent = 'Copied!';
+      setTimeout(function() { btn.textContent = 'Copy'; }, 1500);
+    });
+  };
+
+  // ── Mobile menu ──
+  var mtoggle = document.getElementById('mtoggle');
+  var sidebar = document.getElementById('sidebar');
+  mtoggle.onclick = function() { sidebar.classList.toggle('open'); };
+  document.addEventListener('click', function(e) {
+    if (!sidebar.contains(e.target) && !mtoggle.contains(e.target)) sidebar.classList.remove('open');
+  });
+
+  // ── Floating bubbles canvas ──
+  var canvas = document.getElementById('bg-canvas');
+  var ctx = canvas.getContext('2d');
+  function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+
+  var bubbles = [];
+  for (var i = 0; i < 22; i++) {
+    bubbles.push({
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * window.innerHeight,
+      r: Math.random() * 90 + 20,
+      vx: (Math.random() - 0.5) * 0.25,
+      vy: -(Math.random() * 0.25 + 0.08),
+      alpha: Math.random() * 0.055 + 0.015,
+      hue: Math.random() > 0.5 ? 240 : 275,
+    });
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    bubbles.forEach(function(b) {
+      var g = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.r);
+      g.addColorStop(0, 'hsla(' + b.hue + ',70%,65%,' + b.alpha + ')');
+      g.addColorStop(1, 'hsla(' + b.hue + ',70%,65%,0)');
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+      ctx.fillStyle = g;
+      ctx.fill();
+      b.x += b.vx;
+      b.y += b.vy;
+      if (b.y + b.r < 0) { b.y = window.innerHeight + b.r; b.x = Math.random() * window.innerWidth; }
+      if (b.x < -b.r) b.x = window.innerWidth + b.r;
+      if (b.x > window.innerWidth + b.r) b.x = -b.r;
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+</script>
+</body>
+</html>
